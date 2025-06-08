@@ -1,34 +1,42 @@
-Sub UpdatePnLChart()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("PnL")
+Sub UpdatePnL_Optimized()
+    Dim ws As Worksheet: Set ws = Sheets("Dashboard")
+    Dim STArray() As Variant, PnLArray() As Double
+    Dim Smin As Double, Smax As Double, K As Double, Premium As Double
+    Dim i As Long, Strat As String, n As Long
 
-    Dim S As Double, K As Double, Premium As Double
-    Dim Strat As String, PnL As Double
-    Dim i As Integer
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
 
-    S = ws.Range("B2").Value
-    K = ws.Range("B3").Value
-    Premium = ws.Range("B4").Value
-    Strat = ws.Range("B5").Value
+    Smin = ws.Range("B2").Value
+    Smax = ws.Range("B3").Value
+    K = ws.Range("B4").Value
+    Premium = ws.Range("B5").Value
+    Strat = ws.Range("B6").Value
 
-    For i = 0 To 100
+    n = Smax - Smin + 1
+    ReDim STArray(1 To n, 1 To 1)
+    ReDim PnLArray(1 To n)
+
+    For i = 1 To n
         Dim ST As Double
-        ST = 50 + i
+        ST = Smin + i - 1
+        STArray(i, 1) = ST
 
         Select Case Strat
-            Case "Long Call"
-                PnL = Application.Max(ST - K, 0) - Premium
-            Case "Short Call"
-                PnL = -Application.Max(ST - K, 0) + Premium
-            Case "Long Put"
-                PnL = Application.Max(K - ST, 0) - Premium
-            Case "Short Put"
-                PnL = -Application.Max(K - ST, 0) + Premium
-            Case Else
-                PnL = 0
+            Case "Long Call": PnLArray(i) = Application.Max(ST - K, 0) - Premium
+            Case "Short Call": PnLArray(i) = -Application.Max(ST - K, 0) + Premium
+            Case "Long Put": PnLArray(i) = Application.Max(K - ST, 0) - Premium
+            Case "Short Put": PnLArray(i) = -Application.Max(K - ST, 0) + Premium
+            Case Else: PnLArray(i) = 0
         End Select
-
-        ws.Range("E6").Offset(i, 0).Value = ST
-        ws.Range("F6").Offset(i, 0).Value = PnL
     Next i
+
+    ' Insérer les résultats dans la feuille
+    ws.Range("E6").Resize(n, 1).Value = STArray
+    ws.Range("F6").Resize(n, 1).Value = Application.Transpose(PnLArray)
+
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
 End Sub
