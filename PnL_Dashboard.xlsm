@@ -1,0 +1,34 @@
+Sub UpdatePnLChart()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("PnL")
+
+    Dim S As Double, K As Double, Premium As Double
+    Dim Strat As String, PnL As Double
+    Dim i As Integer
+
+    S = ws.Range("B2").Value
+    K = ws.Range("B3").Value
+    Premium = ws.Range("B4").Value
+    Strat = ws.Range("B5").Value
+
+    For i = 0 To 100
+        Dim ST As Double
+        ST = 50 + i
+
+        Select Case Strat
+            Case "Long Call"
+                PnL = Application.Max(ST - K, 0) - Premium
+            Case "Short Call"
+                PnL = -Application.Max(ST - K, 0) + Premium
+            Case "Long Put"
+                PnL = Application.Max(K - ST, 0) - Premium
+            Case "Short Put"
+                PnL = -Application.Max(K - ST, 0) + Premium
+            Case Else
+                PnL = 0
+        End Select
+
+        ws.Range("E6").Offset(i, 0).Value = ST
+        ws.Range("F6").Offset(i, 0).Value = PnL
+    Next i
+End Sub
